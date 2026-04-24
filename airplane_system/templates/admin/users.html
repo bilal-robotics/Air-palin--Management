@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Manage Users - Admin{% endblock %}
+{% block content %}
+<div class="admin-page"><div class="container">
+    <div class="admin-header">
+        <h1><i class="fas fa-users"></i> All Users</h1>
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline">← Admin Home</a>
+    </div>
+    <div class="dash-table-wrapper">
+        <table class="dash-table">
+            <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Verified</th><th>Admin</th><th>Joined</th></tr></thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td>{{ u.name }}</td>
+                    <td>{{ u.email }}</td>
+                    <td><span class="status-badge {{ 'confirmed' if u.is_verified else 'cancelled' }}">{{ 'Yes' if u.is_verified else 'No' }}</span></td>
+                    <td>{{ 'Admin' if u.is_admin else 'User' }}</td>
+                    <td>{{ u.created_at.strftime('%d %b %Y') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div></div>
+{% endblock %}

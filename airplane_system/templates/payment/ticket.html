@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Ticket {{ booking.booking_id }} — SkyBook{% endblock %}
+
+{% block extra_head %}
+<style>
+.ticket-page{max-width:900px;margin:2rem auto;padding:0 1.5rem}
+.ticket-actions{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem}
+.eticket-wrapper{background:var(--white);border-radius:20px;border:1.5px solid var(--border);overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.08)}
+.et-header-bar{background:linear-gradient(135deg,#0f172a,#1d4ed8);padding:1.75rem 2rem;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.et-brand{font-size:1.4rem;font-weight:800}
+.et-bid{background:rgba(255,255,255,.15);border-radius:8px;padding:.4rem 1rem;font-size:.88rem;font-weight:700;letter-spacing:1px}
+.et-route-bar{display:flex;align-items:center;justify-content:space-between;padding:2rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:1rem}
+.et-city-block{text-align:center}
+.et-ap{font-size:2.5rem;font-weight:800;color:var(--dark)}
+.et-cn{font-size:.85rem;color:var(--mid)}
+.et-tm{font-size:1.1rem;font-weight:700;color:var(--primary)}
+.et-mid{text-align:center;flex:1}
+.et-dur{font-size:.8rem;color:var(--mid);font-weight:600}
+.et-planeline{font-size:1.5rem;color:var(--primary);margin:.25rem 0}
+.et-direct{font-size:.75rem;color:var(--mid)}
+.et-body{display:grid;grid-template-columns:1fr auto;gap:2rem;padding:2rem;align-items:start}
+.et-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem 2rem}
+.et-field label{font-size:.7rem;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.2rem}
+.et-field span{font-size:.92rem;font-weight:600;color:var(--dark)}
+.et-status-row{display:flex;gap:.75rem;flex-wrap:wrap;padding:1rem 2rem;border-top:1px solid var(--border);background:var(--lighter)}
+.et-qr-col{display:flex;flex-direction:column;align-items:center;gap:.5rem}
+.et-qr-col img{border:1px solid var(--border);border-radius:8px;padding:4px;background:#fff}
+.et-qr-col small{font-size:.7rem;color:var(--mid);text-align:center;max-width:130px}
+.et-tear{border-top:2px dashed var(--border);margin:0 1.5rem;position:relative}
+.et-tear::before,.et-tear::after{content:'';position:absolute;top:-10px;width:20px;height:20px;border-radius:50%;background:var(--lighter)}
+.et-tear::before{left:-28px} .et-tear::after{right:-28px}
+.status-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .85rem;border-radius:20px;font-size:.75rem;font-weight:700;text-transform:uppercase}
+.pill-paid{background:#dcfce7;color:#166534}
+.pill-pending{background:#fef9c3;color:#854d0e}
+.pill-refunded{background:#e0f2fe;color:#0c4a6e}
+.pill-partial{background:#fff7ed;color:#9a3412}
+.pill-failed{background:#fee2e2;color:#991b1b}
+.pill-confirmed{background:#dcfce7;color:#166534}
+.pill-cancelled{background:#fee2e2;color:#991b1b}
+.refund-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:1rem;margin:1rem 2rem}
+@media(max-width:600px){.et-body{grid-template-columns:1fr}.et-details-grid{grid-template-columns:1fr}.et-route-bar{flex-direction:column;text-align:center}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ticket-page">
+
+  <div class="ticket-actions">
+    <a href="{{ url_for('payment.download_ticket', booking_id=booking.id) }}"
+       class="btn btn-primary">
+      <i class="fas fa-download"></i> Download PDF Ticket
+    </a>
+    <a href="{{ url_for('bookings.my_bookings') }}" class="btn btn-outline">
+      <i class="fas fa-list"></i> All Bookings
+    </a>
+    <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline">
+      <i class="fas fa-tachometer-alt"></i> Dashboard
+    </a>
+    {% if booking.status == 'Confirmed' %}
+    <form method="POST"
+          action="{{ url_for('payment.cancel_with_refund', booking_id=booking.id) }}"
+          onsubmit="return confirmCancel()">
+      <button type="submit" class="btn btn-danger">
+        <i class="fas fa-times"></i> Cancel &amp; Refund
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  <div class="eticket-wrapper">
+
+    <!-- Header bar -->
+    <div class="et-header-bar">
+      <div>
+        <div class="et-brand">✈ SkyBook</div>
+        <div style="font-size:.8rem;opacity:.7">Electronic Boarding Pass</div>
+      </div>
+      <div class="et-bid">{{ booking.booking_id }}</div>
+    </div>
+
+    <!-- Route -->
+    <div class="et-route-bar">
+      <div class="et-city-block">
+        <div class="et-ap">{{ booking.flight.from_airport }}</div>
+        <div class="et-cn">{{ booking.flight.from_city }}</div>
+        <div class="et-tm">{{ booking.flight.departure_time }}</div>
+      </div>
+      <div class="et-mid">
+        <div class="et-dur">{{ booking.flight.duration }}</div>
+        <div class="et-planeline">✈ ──────── ✈</div>
+        <div class="et-direct">Direct Flight</div>
+      </div>
+      <div class="et-city-block">
+        <div class="et-ap">{{ booking.flight.to_airport }}</div>
+        <div class="et-cn">{{ booking.flight.to_city }}</div>
+        <div class="et-tm">{{ booking.flight.arrival_time }}</div>
+      </div>
+    </div>
+
+    <!-- Body: details + QR -->
+    <div class="et-body">
+      <div class="et-details-grid">
+        <div class="et-field"><label>Flight</label><span>{{ booking.flight.flight_number }}</span></div>
+        <div class="et-field"><label>Airline</label><span>{{ booking.flight.airline }}</span></div>
+        <div class="et-field"><label>Travel Date</label><span>{{ booking.travel_date.strftime('%A, %d %B %Y') }}</span></div>
+        <div class="et-field"><label>Aircraft</label><span>{{ booking.flight.aircraft_type }}</span></div>
+        <div class="et-field"><label>Passenger</label><span>{{ booking.passenger_name }}</span></div>
+        <div class="et-field"><label>Passengers</label><span>{{ booking.passengers }}</span></div>
+        <div class="et-field"><label>Class</label><span>{{ booking.seat_class }}</span></div>
+        <div class="et-field"><label>Contact</label><span>{{ booking.passenger_email }}</span></div>
+        <div class="et-field"><label>Amount Paid</label>
+          <span style="color:var(--primary);font-size:1rem">PKR {{ "{:,.0f}".format(booking.total_price) }}</span></div>
+        <div class="et-field"><label>Payment Method</label>
+          <span>{{ booking.payment_method or 'Pending' }}</span></div>
+        {% if booking.payment_id %}
+        <div class="et-field" style="grid-column:1/-1">
+          <label>Transaction ID</label>
+          <span style="font-size:.8rem;font-family:monospace">{{ booking.payment_id }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- QR Code -->
+      <div class="et-qr-col">
+        <img src="data:image/png;base64,{{ qr_b64 }}"
+             width="140" height="140" alt="Ticket QR Code">
+        <small>Scan to verify ticket or download PDF</small>
+        <a href="{{ url_for('payment.download_ticket', booking_id=booking.id) }}"
+           class="btn btn-sm btn-primary" style="margin-top:.5rem">
+          <i class="fas fa-download"></i> PDF
+        </a>
+      </div>
+    </div>
+
+    <!-- Tear line -->
+    <div class="et-tear"></div>
+
+    <!-- Status row -->
+    <div class="et-status-row">
+      <span class="status-pill pill-{{ booking.payment_status.lower().replace('_','-') }}">
+        <i class="fas fa-credit-card"></i>
+        Payment: {{ booking.payment_status.replace('_',' ') }}
+      </span>
+      <span class="status-pill pill-{{ booking.status.lower() }}">
+        <i class="fas fa-ticket-alt"></i>
+        Booking: {{ booking.status }}
+      </span>
+      {% if booking.refund_amount and booking.refund_amount > 0 %}
+      <span class="status-pill" style="background:#fef9c3;color:#854d0e">
+        <i class="fas fa-undo"></i>
+        Refund: PKR {{ "{:,.0f}".format(booking.refund_amount) }} — {{ booking.refund_status or 'Pending' }}
+      </span>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Refund notice if cancelled -->
+  {% if booking.status == 'Cancelled' and booking.refund_amount %}
+  <div class="refund-box">
+    <h4 style="margin-bottom:.5rem"><i class="fas fa-undo"></i> Refund Information</h4>
+    <p style="font-size:.88rem">
+      A refund of <strong>PKR {{ "{:,.0f}".format(booking.refund_amount) }}</strong>
+      has been initiated to your original payment method.
+      Please allow <strong>5–7 business days</strong> for the amount to reflect.
+    </p>
+    {% if booking.refund_requested_at %}
+    <p style="font-size:.78rem;color:var(--mid)">
+      Requested: {{ booking.refund_requested_at.strftime('%d %b %Y %H:%M') }}
+    </p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Policy reminder -->
+  <div style="background:var(--lighter);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-top:1.5rem;font-size:.82rem;color:var(--mid)">
+    <i class="fas fa-info-circle"></i>
+    <strong>Cancellation Policy:</strong>
+    Cancel within 5 hours of booking → 10% fee, 90% refunded.
+    Cancel after 5 hours → 30% fee, 70% refunded.
+    Refunds processed in 5–7 business days to original payment method.
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmCancel() {
+  return confirm(
+    'Are you sure you want to cancel this booking?\n\n' +
+    'Refund will be calculated based on our cancellation policy:\n' +
+    '• Within 5 hrs of booking: 90% refunded\n' +
+    '• After 5 hrs: 70% refunded'
+  );
+}
+</script>
+{% endblock %}

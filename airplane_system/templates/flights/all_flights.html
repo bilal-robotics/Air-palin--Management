@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}All Flights - SkyBook{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-plane"></i> All Available Flights</h1>
+        <p>Browse all routes and airlines</p>
+    </div>
+</div>
+
+<div class="container" style="padding: 2rem 1rem;">
+
+    <!-- Airline Filter Tabs -->
+    <div class="filter-tabs">
+        <a href="{{ url_for('flights.all_flights') }}"
+           class="filter-tab {% if not selected_airline %}active{% endif %}">
+            All Airlines
+        </a>
+        {% for airline, code in airlines %}
+        <a href="{{ url_for('flights.all_flights', airline=code) }}"
+           class="filter-tab {% if selected_airline == code %}active{% endif %}">
+            {{ code }} - {{ airline.split()[0] }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Flights Grid -->
+    <div class="all-flights-grid">
+        {% for flight in flights %}
+        <div class="flight-card-mini">
+            <div class="fcm-top">
+                <div class="fcm-airline {{ flight.airline_code.lower() }}-bg">{{ flight.airline_code }}</div>
+                <div class="fcm-number">{{ flight.flight_number }}</div>
+                <div class="fcm-seats {% if flight.available_seats < 20 %}low{% endif %}">
+                    {{ flight.available_seats }} seats
+                </div>
+            </div>
+            <div class="fcm-route">
+                <div class="fcm-city">
+                    <div class="fcm-airport">{{ flight.from_airport }}</div>
+                    <div class="fcm-city-name">{{ flight.from_city }}</div>
+                    <div class="fcm-time">{{ flight.departure_time }}</div>
+                </div>
+                <div class="fcm-arrow">
+                    <div class="fcm-duration">{{ flight.duration }}</div>
+                    <div>✈ ────</div>
+                </div>
+                <div class="fcm-city">
+                    <div class="fcm-airport">{{ flight.to_airport }}</div>
+                    <div class="fcm-city-name">{{ flight.to_city }}</div>
+                    <div class="fcm-time">{{ flight.arrival_time }}</div>
+                </div>
+            </div>
+            <div class="fcm-bottom">
+                <div class="fcm-price">PKR {{ "{:,.0f}".format(flight.price) }}</div>
+                <a href="{{ url_for('bookings.book_flight', flight_id=flight.id) }}"
+                   class="btn btn-primary btn-sm">Book</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-flights" style="grid-column:1/-1">
+            <p>No flights available for selected airline.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

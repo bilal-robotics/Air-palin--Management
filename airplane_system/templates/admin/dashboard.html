@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel - SkyBook{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="container">
+        <div class="admin-header">
+            <h1><i class="fas fa-shield-alt"></i> Admin Panel</h1>
+            <p>System management & analytics</p>
+        </div>
+
+        <!-- Admin Stats -->
+        <div class="dash-stats">
+            <div class="stat-card">
+                <div class="sc-icon sc-blue"><i class="fas fa-users"></i></div>
+                <div class="sc-data">
+                    <div class="sc-num">{{ total_users }}</div>
+                    <div class="sc-label">Total Users</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="sc-icon sc-green"><i class="fas fa-plane"></i></div>
+                <div class="sc-data">
+                    <div class="sc-num">{{ total_flights }}</div>
+                    <div class="sc-label">Flights</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="sc-icon sc-amber"><i class="fas fa-ticket-alt"></i></div>
+                <div class="sc-data">
+                    <div class="sc-num">{{ total_bookings }}</div>
+                    <div class="sc-label">Total Bookings</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="sc-icon sc-purple"><i class="fas fa-money-bill-wave"></i></div>
+                <div class="sc-data">
+                    <div class="sc-num">{{ "{:,.0f}".format(revenue) }}</div>
+                    <div class="sc-label">Revenue (PKR)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Navigation -->
+        <div class="admin-nav-cards">
+            <a href="{{ url_for('admin.admin_users') }}" class="admin-nav-card">
+                <i class="fas fa-users"></i>
+                <span>Manage Users</span>
+                <small>{{ total_users }} users</small>
+            </a>
+            <a href="{{ url_for('admin.admin_flights') }}" class="admin-nav-card">
+                <i class="fas fa-plane"></i>
+                <span>Manage Flights</span>
+                <small>{{ total_flights }} flights</small>
+            </a>
+            <a href="{{ url_for('admin.admin_bookings') }}" class="admin-nav-card">
+                <i class="fas fa-ticket-alt"></i>
+                <span>All Bookings</span>
+                <small>{{ total_bookings }} bookings</small>
+            </a>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="dash-section">
+            <h2>Recent Bookings</h2>
+            <div class="dash-table-wrapper">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>User</th>
+                            <th>Flight</th>
+                            <th>Route</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in recent_bookings %}
+                        <tr>
+                            <td><code>{{ b.booking_id }}</code></td>
+                            <td>{{ b.user.name }}</td>
+                            <td>{{ b.flight.flight_number }}</td>
+                            <td>{{ b.flight.from_city }} → {{ b.flight.to_city }}</td>
+                            <td>{{ b.travel_date.strftime('%d %b %Y') }}</td>
+                            <td>PKR {{ "{:,.0f}".format(b.total_price) }}</td>
+                            <td><span class="status-badge {{ b.status.lower() }}">{{ b.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Users -->
+        <div class="dash-section">
+            <h2>Recent Users</h2>
+            <div class="dash-table-wrapper">
+                <table class="dash-table">
+                    <thead>
+                        <tr><th>Name</th><th>Email</th><th>Verified</th><th>Admin</th><th>Joined</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for u in recent_users %}
+                        <tr>
+                            <td>{{ u.name }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>
+                                <span class="status-badge {{ 'confirmed' if u.is_verified else 'cancelled' }}">
+                                    {{ 'Yes' if u.is_verified else 'No' }}
+                                </span>
+                            </td>
+                            <td>{{ 'Yes' if u.is_admin else 'No' }}</td>
+                            <td>{{ u.created_at.strftime('%d %b %Y') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

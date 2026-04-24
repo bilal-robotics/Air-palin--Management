@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Sign Up - SkyBook{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-visual">
+        <div class="auth-visual-content">
+            <div class="auth-logo">✈ SkyBook</div>
+            <h2>Join SkyBook Today!</h2>
+            <p>Create your free account and unlock seamless flight booking across Pakistan and the world.</p>
+            <div class="auth-features">
+                <div class="auth-feature"><i class="fas fa-check"></i> Free to create account</div>
+                <div class="auth-feature"><i class="fas fa-check"></i> Book any airline</div>
+                <div class="auth-feature"><i class="fas fa-check"></i> Manage all bookings</div>
+                <div class="auth-feature"><i class="fas fa-check"></i> Track flights live</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-form-side">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Create Account</h1>
+                <p>Join thousands of happy travelers</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.signup') }}" class="auth-form" id="signupForm">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-user"></i> Full Name
+                    </label>
+                    <input type="text" name="name" class="form-input"
+                           placeholder="Muhammad Ali Khan" required
+                           value="{{ request.form.get('name', '') }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-envelope"></i> Email Address
+                    </label>
+                    <input type="email" name="email" class="form-input"
+                           placeholder="you@example.com" required
+                           value="{{ request.form.get('email', '') }}">
+                    <small class="form-hint">OTP will be sent here (check console in demo mode)</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <div class="input-with-toggle">
+                        <input type="password" name="password" class="form-input"
+                               placeholder="Min 6 characters" required id="passwordInput"
+                               oninput="checkPasswordStrength(this.value)">
+                        <button type="button" class="toggle-password" onclick="togglePassword('passwordInput', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength">
+                        <div class="strength-bar" id="strengthBar"></div>
+                    </div>
+                    <small class="strength-text" id="strengthText"></small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> Confirm Password
+                    </label>
+                    <div class="input-with-toggle">
+                        <input type="password" name="confirm_password" class="form-input"
+                               placeholder="Re-enter your password" required id="confirmInput">
+                        <button type="button" class="toggle-password" onclick="togglePassword('confirmInput', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" id="signupBtn">
+                    <span class="btn-text"><i class="fas fa-user-plus"></i> Create Account</span>
+                    <span class="btn-loading" style="display:none">
+                        <i class="fas fa-spinner fa-spin"></i> Creating account...
+                    </span>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{{ url_for('auth.login') }}">Sign In</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+
+function checkPasswordStrength(password) {
+    const bar = document.getElementById('strengthBar');
+    const text = document.getElementById('strengthText');
+    let strength = 0;
+    if (password.length >= 6) strength++;
+    if (password.length >= 10) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    const colors = ['', '#ef4444', '#f97316', '#eab308', '#22c55e', '#16a34a'];
+    const labels = ['', 'Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
+    bar.style.width = (strength * 20) + '%';
+    bar.style.backgroundColor = colors[strength];
+    text.textContent = labels[strength];
+    text.style.color = colors[strength];
+}
+
+document.getElementById('signupForm').addEventListener('submit', function(e) {
+    const pass = document.getElementById('passwordInput').value;
+    const confirm = document.getElementById('confirmInput').value;
+    if (pass !== confirm) {
+        e.preventDefault();
+        alert('Passwords do not match!');
+        return;
+    }
+    document.querySelector('.btn-text').style.display = 'none';
+    document.querySelector('.btn-loading').style.display = 'inline';
+});
+</script>
+{% endblock %}

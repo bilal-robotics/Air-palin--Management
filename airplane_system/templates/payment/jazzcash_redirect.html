@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Redirecting to JazzCash...{% endblock %}
+{% block content %}
+<div style="text-align:center;padding:4rem 2rem">
+  <div style="font-size:2rem;margin-bottom:1rem">📱</div>
+  <h2>Redirecting to JazzCash...</h2>
+  <p style="color:var(--mid)">Please wait. You will be redirected to JazzCash secure payment page.</p>
+  <form id="jcForm" method="POST" action="{{ endpoint }}">
+    <input type="hidden" name="pp_Version" value="1.1">
+    <input type="hidden" name="pp_TxnType" value="MWALLET">
+    <input type="hidden" name="pp_Language" value="EN">
+    <input type="hidden" name="pp_MerchantID" value="{{ merchant_id }}">
+    <input type="hidden" name="pp_SubMerchantID" value="">
+    <input type="hidden" name="pp_Password" value="">
+    <input type="hidden" name="pp_BankID" value="TBANK">
+    <input type="hidden" name="pp_ProductID" value="RETL">
+    <input type="hidden" name="pp_TxnRefNo" value="{{ txn_ref }}">
+    <input type="hidden" name="pp_Amount" value="{{ amount }}">
+    <input type="hidden" name="pp_TxnCurrency" value="PKR">
+    <input type="hidden" name="pp_TxnDateTime" value="{{ txn_date }}">
+    <input type="hidden" name="pp_BillReference" value="{{ booking.booking_id }}">
+    <input type="hidden" name="pp_Description" value="SkyBook Flight Ticket">
+    <input type="hidden" name="pp_TxnExpiryDateTime" value="{{ expiry }}">
+    <input type="hidden" name="pp_ReturnURL" value="{{ callback_url }}">
+    <input type="hidden" name="pp_SecureHash" value="{{ secure_hash }}">
+    <input type="hidden" name="ppmpf_1" value="{{ booking.passenger_email }}">
+  </form>
+</div>
+<script>window.onload = function(){ document.getElementById('jcForm').submit(); }</script>
+{% endblock %}

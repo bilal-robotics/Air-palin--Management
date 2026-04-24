@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Redirecting to Easypaisa...{% endblock %}
+{% block content %}
+<div style="text-align:center;padding:4rem 2rem">
+  <div style="font-size:2rem;margin-bottom:1rem">📱</div>
+  <h2>Redirecting to Easypaisa...</h2>
+  <p style="color:var(--mid)">Please wait. You will be redirected to Easypaisa secure portal.</p>
+  <form id="epForm" method="POST" action="{{ endpoint }}">
+    <input type="hidden" name="storeId" value="{{ store_id }}">
+    <input type="hidden" name="amount" value="{{ amount }}">
+    <input type="hidden" name="postBackURL" value="{{ callback }}">
+    <input type="hidden" name="orderRefNum" value="{{ order_id }}">
+    <input type="hidden" name="paymentMethod" value="MA_PAYMENT">
+    <input type="hidden" name="merchantHashedReq" value="{{ ep_hash }}">
+    <input type="hidden" name="mobileNum" value="{{ booking.passenger_phone or '' }}">
+    <input type="hidden" name="emailAddr" value="{{ booking.passenger_email }}">
+  </form>
+</div>
+<script>window.onload = function(){ document.getElementById('epForm').submit(); }</script>
+{% endblock %}

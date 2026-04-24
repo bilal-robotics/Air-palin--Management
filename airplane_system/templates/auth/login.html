@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Login - SkyBook{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-visual">
+        <div class="auth-visual-content">
+            <div class="auth-logo">✈ SkyBook</div>
+            <h2>Welcome Back!</h2>
+            <p>Sign in to access your bookings, manage trips, and track your flights in real-time.</p>
+            <div class="auth-features">
+                <div class="auth-feature"><i class="fas fa-check"></i> View all your bookings</div>
+                <div class="auth-feature"><i class="fas fa-check"></i> Real-time flight tracking</div>
+                <div class="auth-feature"><i class="fas fa-check"></i> Easy cancellations</div>
+                <div class="auth-feature"><i class="fas fa-check"></i> Exclusive deals</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-form-side">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Sign In</h1>
+                <p>Enter your credentials to continue</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-envelope"></i> Email Address
+                    </label>
+                    <input type="email" name="email" class="form-input"
+                           placeholder="you@example.com" required
+                           value="{{ request.form.get('email', '') }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <div class="input-with-toggle">
+                        <input type="password" name="password" class="form-input"
+                               placeholder="Enter your password" required id="passwordInput">
+                        <button type="button" class="toggle-password" onclick="togglePassword('passwordInput', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="remember">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+                    <span class="btn-text"><i class="fas fa-sign-in-alt"></i> Sign In</span>
+                    <span class="btn-loading" style="display:none">
+                        <i class="fas fa-spinner fa-spin"></i> Signing in...
+                    </span>
+                </button>
+
+                <!-- Demo Credentials Info -->
+                <div class="demo-info">
+                    <p><strong>🧪 Demo Admin:</strong> admin@skybook.com / admin123</p>
+                </div>
+            </form>
+
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="{{ url_for('auth.signup') }}">Create one free</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+
+document.getElementById('loginForm').addEventListener('submit', function() {
+    document.querySelector('.btn-text').style.display = 'none';
+    document.querySelector('.btn-loading').style.display = 'inline';
+});
+</script>
+{% endblock %}

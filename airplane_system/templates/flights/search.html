@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Search Flights - SkyBook{% endblock %}
+
+{% block content %}
+<div class="search-page">
+
+    <!-- Search Bar (top) -->
+    <div class="search-bar-top">
+        <div class="container">
+            <form action="{{ url_for('flights.search_flights') }}" method="GET" class="compact-search">
+                <input type="text" name="from_city" placeholder="From" value="{{ from_city }}" list="cities">
+                <span class="arrow">→</span>
+                <input type="text" name="to_city" placeholder="To" value="{{ to_city }}" list="cities">
+                <input type="date" name="date" value="{{ travel_date }}">
+                <select name="passengers">
+                    {% for i in range(1, 6) %}
+                    <option value="{{ i }}" {% if passengers == i %}selected{% endif %}>{{ i }} Pax</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <datalist id="cities">
+                    {% for city in cities %}
+                    <option value="{{ city }}">
+                    {% endfor %}
+                </datalist>
+            </form>
+        </div>
+    </div>
+
+    <div class="container search-results-container">
+
+        {% if searched %}
+        <div class="results-header">
+            <div class="results-info">
+                {% if flights %}
+                <h2>{{ flights|length }} flight(s) found</h2>
+                <p>{{ from_city }} → {{ to_city }}
+                    {% if travel_date %} · {{ travel_date }}{% endif %}
+                    · {{ passengers }} passenger(s)
+                </p>
+                {% else %}
+                <h2>No flights found</h2>
+                <p>No flights available for {{ from_city }} → {{ to_city }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if flights %}
+        <div class="flights-list">
+            {% for flight in flights %}
+            <div class="flight-card-result">
+                <div class="flight-airline-info">
+                    <div class="airline-badge-small {{ flight.airline_code.lower() }}-bg">
+                        {{ flight.airline_code }}
+                    </div>
+                    <div>
+                        <div class="airline-name-small">{{ flight.airline }}</div>
+                        <div class="flight-num">{{ flight.flight_number }} · {{ flight.aircraft_type }}</div>
+                    </div>
+                </div>
+
+                <div class="flight-route-display">
+                    <div class="route-time">
+                        <div class="time-big">{{ flight.departure_time }}</div>
+                        <div class="airport-code">{{ flight.from_airport }}</div>
+                        <div class="city-name">{{ flight.from_city }}</div>
+                    </div>
+                    <div class="route-middle">
+                        <div class="duration-text">{{ flight.duration }}</div>
+                        <div class="route-line">
+                            <span class="dot"></span>
+                            <span class="line"></span>
+                            <span class="plane-icon">✈</span>
+                            <span class="line"></span>
+                            <span class="dot"></span>
+                        </div>
+                        <div class="direct-text">Direct</div>
+                    </div>
+                    <div class="route-time">
+                        <div class="time-big">{{ flight.arrival_time }}</div>
+                        <div class="airport-code">{{ flight.to_airport }}</div>
+                        <div class="city-name">{{ flight.to_city }}</div>
+                    </div>
+                </div>
+
+                <div class="flight-seats-info">
+                    <div class="seats-badge {% if flight.available_seats < 20 %}seats-low{% endif %}">
+                        <i class="fas fa-chair"></i>
+                        {{ flight.available_seats }} seats left
+                    </div>
+                </div>
+
+                <div class="flight-price-book">
+                    <div class="price-display">
+                        <div class="price-label">Economy</div>
+                        <div class="price-amount">PKR {{ "{:,.0f}".format(flight.price) }}</div>
+                        <div class="price-per">per person</div>
+                    </div>
+                    <a href="{{ url_for('bookings.book_flight', flight_id=flight.id, date=travel_date, passengers=passengers) }}"
+                       class="btn btn-book">
+                        Book Now <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="no-flights">
+            <div class="no-flights-icon">✈</div>
+            <h3>No flights found for this route</h3>
+            <p>Try different cities or check all available flights</p>
+            <div class="no-flights-actions">
+                <a href="{{ url_for('flights.all_flights') }}" class="btn btn-primary">View All Flights</a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline">New Search</a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Not searched yet -->
+        <div class="search-prompt">
+            <div class="search-prompt-icon">✈</div>
+            <h2>Search for Flights</h2>
+            <p>Enter your departure and destination cities above to find available flights</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

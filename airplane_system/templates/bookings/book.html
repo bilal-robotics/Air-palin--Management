@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}Book Flight {{ flight.flight_number }} - SkyBook{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-ticket-alt"></i> Book Your Flight</h1>
+        <p>{{ flight.from_city }} → {{ flight.to_city }}</p>
+    </div>
+</div>
+
+<div class="container booking-container">
+    <div class="booking-layout">
+
+        <!-- LEFT: Booking Form -->
+        <div class="booking-form-col">
+            <form method="POST" action="{{ url_for('bookings.book_flight', flight_id=flight.id) }}"
+                  class="booking-form" id="bookingForm">
+
+                <!-- Travel Details -->
+                <div class="form-section">
+                    <h3><i class="fas fa-calendar-alt"></i> Travel Details</h3>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Travel Date *</label>
+                            <input type="date" name="travel_date" class="form-input"
+                                   required min="{{ today }}"
+                                   value="{{ travel_date }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Passengers *</label>
+                            <select name="passengers" class="form-input" id="passengersSelect"
+                                    onchange="updatePrice()">
+                                {% for i in range(1, 6) %}
+                                <option value="{{ i }}"
+                                    {% if passengers == i %}selected{% endif %}
+                                    {% if i > flight.available_seats %}disabled{% endif %}>
+                                    {{ i }} Passenger{{ 's' if i > 1 else '' }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Seat Class *</label>
+                        <div class="class-selector">
+                            <label class="class-option">
+                                <input type="radio" name="seat_class" value="Economy" checked
+                                       onchange="updatePrice()">
+                                <div class="class-card">
+                                    <div class="class-icon"><i class="fas fa-chair"></i></div>
+                                    <div class="class-name">Economy</div>
+                                    <div class="class-price">PKR {{ "{:,.0f}".format(flight.price) }}</div>
+                                </div>
+                            </label>
+                            <label class="class-option">
+                                <input type="radio" name="seat_class" value="Business"
+                                       onchange="updatePrice()">
+                                <div class="class-card">
+                                    <div class="class-icon"><i class="fas fa-couch"></i></div>
+                                    <div class="class-name">Business</div>
+                                    <div class="class-price">PKR {{ "{:,.0f}".format(flight.price * 2.5) }}</div>
+                                </div>
+                            </label>
+                            <label class="class-option">
+                                <input type="radio" name="seat_class" value="First"
+                                       onchange="updatePrice()">
+                                <div class="class-card">
+                                    <div class="class-icon"><i class="fas fa-crown"></i></div>
+                                    <div class="class-name">First Class</div>
+                                    <div class="class-price">PKR {{ "{:,.0f}".format(flight.price * 4) }}</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Passenger Info -->
+                <div class="form-section">
+                    <h3><i class="fas fa-user"></i> Passenger Information</h3>
+                    <div class="form-group">
+                        <label class="form-label">Lead Passenger Name *</label>
+                        <input type="text" name="passenger_name" class="form-input"
+                               placeholder="Full name as on CNIC/Passport" required
+                               value="{{ current_user.name }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contact Phone</label>
+                        <input type="tel" name="passenger_phone" class="form-input"
+                               placeholder="+92-300-1234567">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email (auto-filled)</label>
+                        <input type="email" class="form-input" value="{{ current_user.email }}"
+                               disabled>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full btn-lg" id="bookBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Confirm Booking — <span id="totalPriceBtn">PKR {{ "{:,.0f}".format(flight.price) }}</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- RIGHT: Flight Summary -->
+        <div class="booking-summary-col">
+            <div class="booking-summary-card">
+                <h3>Flight Summary</h3>
+
+                <div class="summary-airline">
+                    <div class="sum-airline-code {{ flight.airline_code.lower() }}-bg">
+                        {{ flight.airline_code }}
+                    </div>
+                    <div>
+                        <div class="sum-airline-name">{{ flight.airline }}</div>
+                        <div class="sum-flight-num">{{ flight.flight_number }}</div>
+                    </div>
+                </div>
+
+                <div class="summary-route">
+                    <div class="sum-city">
+                        <div class="sum-time">{{ flight.departure_time }}</div>
+                        <div class="sum-airport">{{ flight.from_airport }}</div>
+                        <div class="sum-city-name">{{ flight.from_city }}</div>
+                    </div>
+                    <div class="sum-middle">
+                        <div class="sum-duration">{{ flight.duration }}</div>
+                        <div class="sum-line">✈ ──────</div>
+                        <div>Direct</div>
+                    </div>
+                    <div class="sum-city">
+                        <div class="sum-time">{{ flight.arrival_time }}</div>
+                        <div class="sum-airport">{{ flight.to_airport }}</div>
+                        <div class="sum-city-name">{{ flight.to_city }}</div>
+                    </div>
+                </div>
+
+                <div class="summary-details">
+                    <div class="sum-row">
+                        <span>Aircraft</span>
+                        <span>{{ flight.aircraft_type }}</span>
+                    </div>
+                    <div class="sum-row">
+                        <span>Available Seats</span>
+                        <span>{{ flight.available_seats }}</span>
+                    </div>
+                </div>
+
+                <hr>
+                <div class="summary-pricing" id="summaryPricing">
+                    <div class="sum-row">
+                        <span>Base Fare</span>
+                        <span id="baseFare">PKR {{ "{:,.0f}".format(flight.price) }}</span>
+                    </div>
+                    <div class="sum-row">
+                        <span>Passengers</span>
+                        <span id="passengerCount">× 1</span>
+                    </div>
+                    <div class="sum-row">
+                        <span>Class</span>
+                        <span id="classMultiplier">Economy</span>
+                    </div>
+                    <hr>
+                    <div class="sum-row total-row">
+                        <span>Total</span>
+                        <span id="totalPrice" class="total-amount">
+                            PKR {{ "{:,.0f}".format(flight.price) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const basePrice = {{ flight.price }};
+const multipliers = { Economy: 1.0, Business: 2.5, First: 4.0 };
+
+function updatePrice() {
+    const passengers = parseInt(document.getElementById('passengersSelect').value);
+    const classEl = document.querySelector('input[name="seat_class"]:checked');
+    const seatClass = classEl ? classEl.value : 'Economy';
+    const mult = multipliers[seatClass] || 1.0;
+    const total = basePrice * passengers * mult;
+
+    document.getElementById('totalPrice').textContent = 'PKR ' + total.toLocaleString('en-PK', {maximumFractionDigits: 0});
+    document.getElementById('totalPriceBtn').textContent = 'PKR ' + total.toLocaleString('en-PK', {maximumFractionDigits: 0});
+    document.getElementById('passengerCount').textContent = '× ' + passengers;
+    document.getElementById('classMultiplier').textContent = seatClass;
+    document.getElementById('baseFare').textContent = 'PKR ' + (basePrice * mult).toLocaleString('en-PK', {maximumFractionDigits: 0});
+}
+
+document.querySelectorAll('input[name="seat_class"]').forEach(r => r.addEventListener('change', updatePrice));
+
+document.getElementById('bookingForm').addEventListener('submit', function() {
+    document.getElementById('bookBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    document.getElementById('bookBtn').disabled = true;
+});
+</script>
+{% endblock %}

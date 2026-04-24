@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Booking {{ booking.booking_id }} - SkyBook{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-ticket-alt"></i> Booking Details</h1>
+        <p>Reference: <strong>{{ booking.booking_id }}</strong></p>
+    </div>
+</div>
+
+<div class="container" style="padding:2rem 1rem; max-width:800px; margin:0 auto;">
+    <div class="detail-card">
+
+        <div class="detail-status-bar {{ booking.status.lower() }}">
+            <i class="fas {% if booking.status == 'Confirmed' %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+            {{ booking.status }}
+        </div>
+
+        <div class="eticket" style="margin-top:1.5rem">
+            <div class="eticket-header">
+                <div class="et-airline">
+                    <span class="et-code {{ booking.flight.airline_code.lower() }}-bg">
+                        {{ booking.flight.airline_code }}
+                    </span>
+                    <span>{{ booking.flight.airline }}</span>
+                </div>
+                <div class="et-flight-num">{{ booking.flight.flight_number }}</div>
+            </div>
+            <div class="eticket-route">
+                <div class="et-city">
+                    <div class="et-airport">{{ booking.flight.from_airport }}</div>
+                    <div class="et-city-name">{{ booking.flight.from_city }}</div>
+                    <div class="et-time">{{ booking.flight.departure_time }}</div>
+                </div>
+                <div class="et-middle">
+                    <div class="et-duration">{{ booking.flight.duration }}</div>
+                    <div>✈ ────────── ✈</div>
+                    <div>Direct</div>
+                </div>
+                <div class="et-city">
+                    <div class="et-airport">{{ booking.flight.to_airport }}</div>
+                    <div class="et-city-name">{{ booking.flight.to_city }}</div>
+                    <div class="et-time">{{ booking.flight.arrival_time }}</div>
+                </div>
+            </div>
+            <div class="eticket-tear"></div>
+            <div class="eticket-details">
+                <div class="et-detail"><div class="et-dl">Travel Date</div><div class="et-dv">{{ booking.travel_date.strftime('%A, %d %B %Y') }}</div></div>
+                <div class="et-detail"><div class="et-dl">Passenger Name</div><div class="et-dv">{{ booking.passenger_name }}</div></div>
+                <div class="et-detail"><div class="et-dl">Email</div><div class="et-dv">{{ booking.passenger_email }}</div></div>
+                <div class="et-detail"><div class="et-dl">Phone</div><div class="et-dv">{{ booking.passenger_phone or '–' }}</div></div>
+                <div class="et-detail"><div class="et-dl">Passengers</div><div class="et-dv">{{ booking.passengers }}</div></div>
+                <div class="et-detail"><div class="et-dl">Class</div><div class="et-dv">{{ booking.seat_class }}</div></div>
+                <div class="et-detail"><div class="et-dl">Aircraft</div><div class="et-dv">{{ booking.flight.aircraft_type }}</div></div>
+                <div class="et-detail"><div class="et-dl">Booked On</div><div class="et-dv">{{ booking.created_at.strftime('%d %b %Y %H:%M') }}</div></div>
+                <div class="et-detail"><div class="et-dl">Total Amount</div><div class="et-dv et-price">PKR {{ "{:,.0f}".format(booking.total_price) }}</div></div>
+            </div>
+        </div>
+
+        <div class="detail-actions" style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+            <a href="{{ url_for('bookings.my_bookings') }}" class="btn btn-outline">← My Bookings</a>
+            {% if booking.status == 'Confirmed' %}
+            <form method="POST" action="{{ url_for('bookings.cancel_booking', booking_id=booking.id) }}"
+                  onsubmit="return confirm('Cancel this booking?')">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-times"></i> Cancel Booking
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

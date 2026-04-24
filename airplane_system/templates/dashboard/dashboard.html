@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - SkyBook{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="container">
+
+        <!-- Welcome Header -->
+        <div class="dash-welcome">
+            <div class="dash-welcome-text">
+                <div class="dash-avatar">{{ current_user.name[0].upper() }}</div>
+                <div>
+                    <h1>Welcome back, {{ current_user.name.split()[0] }}! ✈️</h1>
+                    <p>Here's your travel overview</p>
+                </div>
+            </div>
+            <div class="dash-quick-actions">
+                <a href="{{ url_for('flights.search_flights') }}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Search Flights
+                </a>
+                <a href="{{ url_for('bookings.my_bookings') }}" class="btn btn-outline">
+                    <i class="fas fa-ticket-alt"></i> All Bookings
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="dash-stats">
+            <div class="stat-card">
+                <div class="sc-icon sc-blue"><i class="fas fa-ticket-alt"></i></div>
+                <div class="sc-data">
+                    <div class="sc-num">{{ total_bookings }}</div>
+                    <div class="sc-label">Total Bookings</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="sc-icon sc-green"><i class="fas fa-check-circle"></i></div>
+                <div class="sc-data">
+                    <div class="sc-num">{{ confirmed_bookings }}</div>
+                    <div class="sc-label">Confirmed</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="sc-icon sc-red"><i class="fas fa-times-circle"></i></div>
+                <div class="sc-data">
+                    <div class="sc-num">{{ cancelled_bookings }}</div>
+                    <div class="sc-label">Cancelled</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="sc-icon sc-amber"><i class="fas fa-wallet"></i></div>
+                <div class="sc-data">
+                    <div class="sc-num">{{ "{:,.0f}".format(total_spent) }}</div>
+                    <div class="sc-label">PKR Spent</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Flights -->
+        {% if upcoming_bookings %}
+        <div class="dash-section">
+            <div class="dash-section-header">
+                <h2><i class="fas fa-plane-departure"></i> Upcoming Flights</h2>
+            </div>
+            <div class="upcoming-flights">
+                {% for b in upcoming_bookings %}
+                <div class="upcoming-card">
+                    <div class="uc-airline {{ b.flight.airline_code.lower() }}-bg">
+                        {{ b.flight.airline_code }}
+                    </div>
+                    <div class="uc-route">
+                        <div class="uc-city">{{ b.flight.from_city }}</div>
+                        <div class="uc-arrow">✈</div>
+                        <div class="uc-city">{{ b.flight.to_city }}</div>
+                    </div>
+                    <div class="uc-date">
+                        <i class="fas fa-calendar"></i>
+                        {{ b.travel_date.strftime('%d %b %Y') }}
+                    </div>
+                    <div class="uc-id">{{ b.booking_id }}</div>
+                    <a href="{{ url_for('bookings.booking_detail', booking_id=b.id) }}"
+                       class="btn btn-sm btn-outline">View</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Bookings Table -->
+        <div class="dash-section">
+            <div class="dash-section-header">
+                <h2><i class="fas fa-history"></i> Recent Bookings</h2>
+                <a href="{{ url_for('bookings.my_bookings') }}" class="view-all-link">View all →</a>
+            </div>
+
+            {% if recent_bookings %}
+            <div class="dash-table-wrapper">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Flight</th>
+                            <th>Route</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in recent_bookings %}
+                        <tr>
+                            <td><code>{{ b.booking_id }}</code></td>
+                            <td>
+                                <span class="table-airline-badge {{ b.flight.airline_code.lower() }}-bg">
+                                    {{ b.flight.airline_code }}
+                                </span>
+                                {{ b.flight.flight_number }}
+                            </td>
+                            <td>{{ b.flight.from_city }} → {{ b.flight.to_city }}</td>
+                            <td>{{ b.travel_date.strftime('%d %b %Y') }}</td>
+                            <td>PKR {{ "{:,.0f}".format(b.total_price) }}</td>
+                            <td><span class="status-badge {{ b.status.lower() }}">{{ b.status }}</span></td>
+                            <td>
+                                <a href="{{ url_for('bookings.booking_detail', booking_id=b.id) }}"
+                                   class="btn btn-sm btn-outline">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">🎫</div>
+                <p>No bookings yet. <a href="{{ url_for('flights.all_flights') }}">Book your first flight!</a></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Quick Links -->
+        <div class="dash-section">
+            <div class="dash-section-header">
+                <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+            </div>
+            <div class="quick-actions-grid">
+                <a href="{{ url_for('flights.search_flights') }}" class="qa-card">
+                    <div class="qa-icon"><i class="fas fa-search"></i></div>
+                    <div class="qa-label">Search Flights</div>
+                </a>
+                <a href="{{ url_for('flights.all_flights') }}" class="qa-card">
+                    <div class="qa-icon"><i class="fas fa-plane"></i></div>
+                    <div class="qa-label">All Flights</div>
+                </a>
+                <a href="{{ url_for('flights.track_flight') }}" class="qa-card">
+                    <div class="qa-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="qa-label">Track Flight</div>
+                </a>
+                <a href="{{ url_for('bookings.my_bookings') }}" class="qa-card">
+                    <div class="qa-icon"><i class="fas fa-ticket-alt"></i></div>
+                    <div class="qa-label">My Bookings</div>
+                </a>
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="qa-card qa-admin">
+                    <div class="qa-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="qa-label">Admin Panel</div>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

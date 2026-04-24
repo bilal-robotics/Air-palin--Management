@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+{% block title %}SkyBook - Book Flights Online | Pakistan's Premier Booking Platform{% endblock %}
+{% block body_class %}home-page{% endblock %}
+
+{% block content %}
+
+<!-- ============================
+     HERO SECTION
+     ============================ -->
+<section class="hero">
+    <div class="hero-bg">
+        <div class="hero-grid"></div>
+        <div class="floating-plane plane-1">✈</div>
+        <div class="floating-plane plane-2">✈</div>
+        <div class="floating-plane plane-3">✈</div>
+    </div>
+
+    <div class="hero-content">
+        <div class="hero-badge">
+            <span class="badge-dot"></span>
+            Pakistan's #1 Flight Booking Platform
+        </div>
+        <h1 class="hero-title">
+            Your Journey<br>
+            <span class="title-gradient">Starts Here</span>
+        </h1>
+        <p class="hero-subtitle">
+            Book domestic & international flights with ease.
+            Best prices, seamless booking, unforgettable journeys.
+        </p>
+
+        <!-- Search Form -->
+        <div class="hero-search-card">
+            <form action="{{ url_for('flights.search_flights') }}" method="GET" class="search-form" id="heroSearchForm">
+                <div class="search-row">
+                    <div class="search-field">
+                        <label><i class="fas fa-plane-departure"></i> From</label>
+                        <input type="text" name="from_city" placeholder="Departure city (e.g., Karachi)"
+                               required list="cities-list" autocomplete="off">
+                    </div>
+                    <div class="swap-btn" id="swapCities" title="Swap cities">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="search-field">
+                        <label><i class="fas fa-plane-arrival"></i> To</label>
+                        <input type="text" name="to_city" placeholder="Destination (e.g., Lahore)"
+                               required list="cities-list" autocomplete="off">
+                    </div>
+                </div>
+                <div class="search-row">
+                    <div class="search-field">
+                        <label><i class="fas fa-calendar"></i> Travel Date</label>
+                        <input type="date" name="date" id="travelDate" required>
+                    </div>
+                    <div class="search-field">
+                        <label><i class="fas fa-users"></i> Passengers</label>
+                        <select name="passengers">
+                            <option value="1">1 Passenger</option>
+                            <option value="2">2 Passengers</option>
+                            <option value="3">3 Passengers</option>
+                            <option value="4">4 Passengers</option>
+                            <option value="5">5 Passengers</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-search">
+                        <i class="fas fa-search"></i> Search Flights
+                    </button>
+                </div>
+                <datalist id="cities-list">
+                    <option value="Karachi">
+                    <option value="Lahore">
+                    <option value="Islamabad">
+                    <option value="Dubai">
+                    <option value="Doha">
+                    <option value="London">
+                    <option value="New York">
+                    <option value="Sharjah">
+                </datalist>
+            </form>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="hero-stats">
+            <div class="stat-item">
+                <div class="stat-number">50K+</div>
+                <div class="stat-label">Happy Travelers</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-number">15+</div>
+                <div class="stat-label">Destinations</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-number">4</div>
+                <div class="stat-label">Airlines</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Support</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================
+     AIRLINES SECTION
+     ============================ -->
+<section class="section airlines-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Our Partner Airlines</h2>
+            <p>Flying with the world's most trusted carriers</p>
+        </div>
+        <div class="airlines-grid">
+            <div class="airline-card" onclick="filterAirline('PK')">
+                <div class="airline-logo pia-logo">PIA</div>
+                <div class="airline-name">Pakistan International Airlines</div>
+                <div class="airline-routes">Domestic & International Routes</div>
+                <div class="airline-badge">National Carrier</div>
+            </div>
+            <div class="airline-card" onclick="filterAirline('EK')">
+                <div class="airline-logo emirates-logo">EK</div>
+                <div class="airline-name">Emirates</div>
+                <div class="airline-routes">International Luxury Travel</div>
+                <div class="airline-badge">5-Star Airline</div>
+            </div>
+            <div class="airline-card" onclick="filterAirline('QR')">
+                <div class="airline-logo qatar-logo">QR</div>
+                <div class="airline-name">Qatar Airways</div>
+                <div class="airline-routes">World's Best Airline</div>
+                <div class="airline-badge">Award Winning</div>
+            </div>
+            <div class="airline-card" onclick="filterAirline('G9')">
+                <div class="airline-logo airarabia-logo">G9</div>
+                <div class="airline-name">Air Arabia</div>
+                <div class="airline-routes">Budget-Friendly Travel</div>
+                <div class="airline-badge">Best Value</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================
+     POPULAR ROUTES
+     ============================ -->
+<section class="section routes-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Popular Routes</h2>
+            <p>Most searched destinations this week</p>
+        </div>
+        <div class="routes-grid">
+            <a href="{{ url_for('flights.search_flights', from_city='Karachi', to_city='Lahore') }}" class="route-card">
+                <div class="route-cities">
+                    <span>KHI</span>
+                    <span class="route-arrow">→</span>
+                    <span>LHE</span>
+                </div>
+                <div class="route-names">Karachi → Lahore</div>
+                <div class="route-price">From PKR 11,000</div>
+                <div class="route-tag">🔥 Most Popular</div>
+            </a>
+            <a href="{{ url_for('flights.search_flights', from_city='Karachi', to_city='Dubai') }}" class="route-card">
+                <div class="route-cities">
+                    <span>KHI</span>
+                    <span class="route-arrow">→</span>
+                    <span>DXB</span>
+                </div>
+                <div class="route-names">Karachi → Dubai</div>
+                <div class="route-price">From PKR 35,000</div>
+                <div class="route-tag">✈ International</div>
+            </a>
+            <a href="{{ url_for('flights.search_flights', from_city='Karachi', to_city='Islamabad') }}" class="route-card">
+                <div class="route-cities">
+                    <span>KHI</span>
+                    <span class="route-arrow">→</span>
+                    <span>ISB</span>
+                </div>
+                <div class="route-names">Karachi → Islamabad</div>
+                <div class="route-price">From PKR 14,000</div>
+                <div class="route-tag">⚡ Quick Flight</div>
+            </a>
+            <a href="{{ url_for('flights.search_flights', from_city='Karachi', to_city='London') }}" class="route-card">
+                <div class="route-cities">
+                    <span>KHI</span>
+                    <span class="route-arrow">→</span>
+                    <span>LHR</span>
+                </div>
+                <div class="route-names">Karachi → London</div>
+                <div class="route-price">From PKR 1,85,000</div>
+                <div class="route-tag">🌍 Long Haul</div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ============================
+     HOW IT WORKS
+     ============================ -->
+<section class="section how-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Book in 3 Simple Steps</h2>
+            <p>Your flight is just minutes away</p>
+        </div>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">01</div>
+                <div class="step-icon"><i class="fas fa-search"></i></div>
+                <h3>Search Flights</h3>
+                <p>Enter your departure city, destination, date and number of passengers to find available flights.</p>
+            </div>
+            <div class="step-connector">→</div>
+            <div class="step-card">
+                <div class="step-number">02</div>
+                <div class="step-icon"><i class="fas fa-ticket-alt"></i></div>
+                <h3>Select & Book</h3>
+                <p>Compare prices, choose your preferred airline and class, then fill in passenger details to book.</p>
+            </div>
+            <div class="step-connector">→</div>
+            <div class="step-card">
+                <div class="step-number">03</div>
+                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                <h3>Fly!</h3>
+                <p>Receive your booking confirmation with a unique booking ID. Manage your trip from the dashboard.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================
+     FEATURES
+     ============================ -->
+<section class="section features-section">
+    <div class="container">
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h4>Secure Booking</h4>
+                <p>Bank-grade security for all your transactions</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <h4>Live Tracking</h4>
+                <p>Track your flight in real-time anywhere</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-headset"></i></div>
+                <h4>24/7 Support</h4>
+                <p>Round-the-clock customer service</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-tag"></i></div>
+                <h4>Best Prices</h4>
+                <p>Guaranteed lowest fares available</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+{% if not current_user.is_authenticated %}
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-card">
+            <h2>Ready to Fly? ✈️</h2>
+            <p>Create your free account and start booking flights in minutes</p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-plus"></i> Create Free Account
+                </a>
+                <a href="{{ url_for('flights.all_flights') }}" class="btn btn-outline btn-lg">
+                    <i class="fas fa-plane"></i> Browse Flights
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Swap cities
+document.getElementById('swapCities').addEventListener('click', function() {
+    const fromInput = document.querySelector('input[name="from_city"]');
+    const toInput = document.querySelector('input[name="to_city"]');
+    const temp = fromInput.value;
+    fromInput.value = toInput.value;
+    toInput.value = temp;
+    this.classList.add('rotate-swap');
+    setTimeout(() => this.classList.remove('rotate-swap'), 500);
+});
+
+// Set min date to today
+document.getElementById('travelDate').min = new Date().toISOString().split('T')[0];
+
+// Airline filter redirect
+function filterAirline(code) {
+    window.location.href = "{{ url_for('flights.all_flights') }}?airline=" + code;
+}
+</script>
+{% endblock %}

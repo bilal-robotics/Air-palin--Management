@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed - SkyBook{% endblock %}
+
+{% block content %}
+<div class="confirmation-page">
+    <div class="container">
+        <div class="confirmation-card">
+
+            <!-- Success Animation -->
+            <div class="confirm-success-icon">
+                <div class="success-circle">
+                    <i class="fas fa-check"></i>
+                </div>
+            </div>
+
+            <h1>Booking Confirmed! ✈️</h1>
+            <p class="confirm-subtitle">Your flight has been successfully booked</p>
+
+            <!-- Booking ID Badge -->
+            <div class="booking-id-badge">
+                <div class="bid-label">Booking Reference</div>
+                <div class="bid-code">{{ booking.booking_id }}</div>
+                <button onclick="copyBookingId('{{ booking.booking_id }}')" class="bid-copy">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+
+            <!-- E-Ticket Style Card -->
+            <div class="eticket">
+                <div class="eticket-header">
+                    <div class="et-airline">
+                        <span class="et-code {{ booking.flight.airline_code.lower() }}-bg">
+                            {{ booking.flight.airline_code }}
+                        </span>
+                        <span>{{ booking.flight.airline }}</span>
+                    </div>
+                    <div class="et-flight-num">{{ booking.flight.flight_number }}</div>
+                </div>
+
+                <div class="eticket-route">
+                    <div class="et-city">
+                        <div class="et-airport">{{ booking.flight.from_airport }}</div>
+                        <div class="et-city-name">{{ booking.flight.from_city }}</div>
+                        <div class="et-time">{{ booking.flight.departure_time }}</div>
+                    </div>
+                    <div class="et-middle">
+                        <div class="et-duration">{{ booking.flight.duration }}</div>
+                        <div class="et-plane">✈ ──────────── ✈</div>
+                        <div>Direct Flight</div>
+                    </div>
+                    <div class="et-city">
+                        <div class="et-airport">{{ booking.flight.to_airport }}</div>
+                        <div class="et-city-name">{{ booking.flight.to_city }}</div>
+                        <div class="et-time">{{ booking.flight.arrival_time }}</div>
+                    </div>
+                </div>
+
+                <div class="eticket-tear"></div>
+
+                <div class="eticket-details">
+                    <div class="et-detail">
+                        <div class="et-dl">Travel Date</div>
+                        <div class="et-dv">{{ booking.travel_date.strftime('%d %B %Y') }}</div>
+                    </div>
+                    <div class="et-detail">
+                        <div class="et-dl">Passenger</div>
+                        <div class="et-dv">{{ booking.passenger_name }}</div>
+                    </div>
+                    <div class="et-detail">
+                        <div class="et-dl">Class</div>
+                        <div class="et-dv">{{ booking.seat_class }}</div>
+                    </div>
+                    <div class="et-detail">
+                        <div class="et-dl">Passengers</div>
+                        <div class="et-dv">{{ booking.passengers }}</div>
+                    </div>
+                    <div class="et-detail">
+                        <div class="et-dl">Total Paid</div>
+                        <div class="et-dv et-price">PKR {{ "{:,.0f}".format(booking.total_price) }}</div>
+                    </div>
+                    <div class="et-detail">
+                        <div class="et-dl">Status</div>
+                        <div class="et-dv">
+                            <span class="status-badge confirmed">{{ booking.status }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="confirm-actions">
+                <a href="{{ url_for('bookings.my_bookings') }}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> My Bookings
+                </a>
+                <a href="{{ url_for('flights.search_flights') }}" class="btn btn-outline">
+                    <i class="fas fa-search"></i> Book Another Flight
+                </a>
+                <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function copyBookingId(id) {
+    navigator.clipboard.writeText(id).then(() => {
+        const btn = document.querySelector('.bid-copy');
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.style.background = '#22c55e';
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+            btn.style.background = '';
+        }, 2000);
+    });
+}
+
+// Confetti animation
+window.addEventListener('load', () => {
+    for (let i = 0; i < 60; i++) {
+        createConfetti();
+    }
+});
+
+function createConfetti() {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.cssText = `
+        position:fixed; top:-10px;
+        left:${Math.random()*100}vw;
+        width:${Math.random()*10+5}px;
+        height:${Math.random()*10+5}px;
+        background:${['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6'][Math.floor(Math.random()*5)]};
+        border-radius:${Math.random()>0.5?'50%':'0'};
+        animation: fall ${Math.random()*3+2}s linear forwards;
+        z-index:9999;
+    `;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+}
+</script>
+<style>
+@keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); opacity:0; }
+}
+</style>
+{% endblock %}

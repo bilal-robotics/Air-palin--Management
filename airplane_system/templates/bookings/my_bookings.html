@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}My Bookings - SkyBook{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-ticket-alt"></i> My Bookings</h1>
+        <p>All your flight reservations in one place</p>
+    </div>
+</div>
+
+<div class="container" style="padding:2rem 1rem;">
+
+    {% if bookings %}
+    <div class="bookings-list">
+        {% for b in bookings %}
+        <div class="booking-row {% if b.status == 'Cancelled' %}booking-cancelled{% endif %}">
+            <div class="br-airline">
+                <div class="br-code {{ b.flight.airline_code.lower() }}-bg">{{ b.flight.airline_code }}</div>
+                <div>
+                    <div class="br-flight-num">{{ b.flight.flight_number }}</div>
+                    <div class="br-airline-name">{{ b.flight.airline }}</div>
+                </div>
+            </div>
+
+            <div class="br-route">
+                <div class="br-city">
+                    <div class="br-airport">{{ b.flight.from_airport }}</div>
+                    <div class="br-city-name">{{ b.flight.from_city }}</div>
+                </div>
+                <div class="br-arrow">→</div>
+                <div class="br-city">
+                    <div class="br-airport">{{ b.flight.to_airport }}</div>
+                    <div class="br-city-name">{{ b.flight.to_city }}</div>
+                </div>
+            </div>
+
+            <div class="br-details">
+                <div class="br-date">
+                    <i class="fas fa-calendar"></i>
+                    {{ b.travel_date.strftime('%d %b %Y') }}
+                </div>
+                <div class="br-pax">
+                    <i class="fas fa-users"></i>
+                    {{ b.passengers }} pax · {{ b.seat_class }}
+                </div>
+            </div>
+
+            <div class="br-price-status">
+                <div class="br-price">PKR {{ "{:,.0f}".format(b.total_price) }}</div>
+                <div class="status-badge {{ b.status.lower() }}">{{ b.status }}</div>
+            </div>
+
+            <div class="br-booking-id">
+                <div class="br-id-label">Booking ID</div>
+                <div class="br-id">{{ b.booking_id }}</div>
+            </div>
+
+            <div class="br-actions">
+                <a href="{{ url_for('payment.ticket_view', booking_id=b.id) }}"
+                   class="btn btn-sm btn-outline">
+                    <i class="fas fa-eye"></i> View
+                </a>
+                {% if b.payment_status == 'Pending' and b.status != 'Cancelled' %}
+                <a href="{{ url_for('payment.payment_page', booking_id=b.id) }}"
+                   class="btn btn-sm btn-primary">
+                    <i class="fas fa-credit-card"></i> Pay
+                </a>
+                {% elif b.payment_status == 'Paid' %}
+                <a href="{{ url_for('payment.download_ticket', booking_id=b.id) }}"
+                   class="btn btn-sm btn-primary">
+                    <i class="fas fa-download"></i> PDF
+                </a>
+                {% endif %}
+                {% if b.status == 'Confirmed' %}
+                <form method="POST"
+                      action="{{ url_for('payment.cancel_with_refund', booking_id=b.id) }}"
+                      onsubmit="return confirm('Cancel booking {{ b.booking_id }}? Refund will apply.')">
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🎫</div>
+        <h3>No bookings yet</h3>
+        <p>You haven't booked any flights. Start exploring and book your first flight!</p>
+        <a href="{{ url_for('flights.all_flights') }}" class="btn btn-primary">
+            <i class="fas fa-search"></i> Find Flights
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

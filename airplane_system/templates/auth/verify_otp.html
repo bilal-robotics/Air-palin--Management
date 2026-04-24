@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Verify Email - SkyBook{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="verify-container">
+    <div class="verify-card">
+        <div class="verify-icon">
+            <i class="fas fa-envelope-open-text"></i>
+        </div>
+        <h1>Verify Your Email</h1>
+        <p class="verify-subtitle">
+            We've sent a 6-digit OTP to<br>
+            <strong>{{ email }}</strong>
+        </p>
+        <p class="verify-demo-note">
+            <i class="fas fa-info-circle"></i>
+            <strong>Demo Mode:</strong> Check your terminal/console for the OTP code
+        </p>
+
+        <form method="POST" action="{{ url_for('auth.verify_otp') }}" class="otp-form" id="otpForm">
+            <div class="otp-inputs">
+                <input type="text" class="otp-input" maxlength="1" data-index="0" autofocus>
+                <input type="text" class="otp-input" maxlength="1" data-index="1">
+                <input type="text" class="otp-input" maxlength="1" data-index="2">
+                <input type="text" class="otp-input" maxlength="1" data-index="3">
+                <input type="text" class="otp-input" maxlength="1" data-index="4">
+                <input type="text" class="otp-input" maxlength="1" data-index="5">
+            </div>
+            <input type="hidden" name="otp" id="otpHidden">
+
+            <button type="submit" class="btn btn-primary btn-full" id="verifyBtn">
+                <i class="fas fa-check-circle"></i> Verify Email
+            </button>
+        </form>
+
+        <div class="resend-section">
+            <p>Didn't receive the OTP?</p>
+            <a href="{{ url_for('auth.resend_otp') }}" class="btn btn-outline">
+                <i class="fas fa-redo"></i> Resend OTP
+            </a>
+        </div>
+
+        <div class="verify-footer">
+            <a href="{{ url_for('auth.signup') }}">← Back to Signup</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const inputs = document.querySelectorAll('.otp-input');
+
+inputs.forEach((input, index) => {
+    input.addEventListener('input', function() {
+        // Only allow digits
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value && index < 5) {
+            inputs[index + 1].focus();
+        }
+        updateHidden();
+    });
+
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && !this.value && index > 0) {
+            inputs[index - 1].focus();
+        }
+    });
+
+    input.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const paste = e.clipboardData.getData('text').replace(/[^0-9]/g, '');
+        paste.split('').forEach((char, i) => {
+            if (inputs[i]) inputs[i].value = char;
+        });
+        updateHidden();
+        if (paste.length >= 6) inputs[5].focus();
+    });
+});
+
+function updateHidden() {
+    const otp = Array.from(inputs).map(i => i.value).join('');
+    document.getElementById('otpHidden').value = otp;
+}
+
+document.getElementById('otpForm').addEventListener('submit', function(e) {
+    const otp = document.getElementById('otpHidden').value;
+    if (otp.length !== 6) {
+        e.preventDefault();
+        alert('Please enter the complete 6-digit OTP');
+    }
+});
+</script>
+{% endblock %}

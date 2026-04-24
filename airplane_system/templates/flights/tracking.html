@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Live Flight Tracking - SkyBook{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-map-marker-alt"></i> Live Flight Tracker</h1>
+        <p>Track flights in real-time using OpenSky Network API</p>
+    </div>
+</div>
+
+<div class="container tracking-container">
+    <div class="tracking-layout">
+
+        <!-- Search Panel -->
+        <div class="tracking-panel">
+            <div class="tracking-search">
+                <h3><i class="fas fa-search"></i> Search Flight</h3>
+                <div class="track-input-group">
+                    <input type="text" id="flightNumberInput"
+                           placeholder="e.g., PK301, EK601" class="form-input"
+                           value="PK301">
+                    <button onclick="trackFlight()" class="btn btn-primary">
+                        <i class="fas fa-radar"></i> Track
+                    </button>
+                </div>
+                <div class="quick-tracks">
+                    <p>Quick Track:</p>
+                    <div class="quick-btns">
+                        <button onclick="quickTrack('PK301')" class="quick-btn">PK301</button>
+                        <button onclick="quickTrack('EK601')" class="quick-btn">EK601</button>
+                        <button onclick="quickTrack('QR501')" class="quick-btn">QR501</button>
+                        <button onclick="quickTrack('G9201')" class="quick-btn">G9201</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flight Info Card -->
+            <div id="flightInfoCard" class="flight-info-card" style="display:none">
+                <div class="fic-header">
+                    <div class="fic-status" id="ficStatus">
+                        <span class="status-dot"></span>
+                        <span id="ficStatusText">In Air</span>
+                    </div>
+                    <div class="fic-number" id="ficNumber">PK-301</div>
+                </div>
+                <div class="fic-body">
+                    <div class="fic-row">
+                        <span><i class="fas fa-map-marker-alt"></i> Latitude</span>
+                        <span id="ficLat">–</span>
+                    </div>
+                    <div class="fic-row">
+                        <span><i class="fas fa-map-marker-alt"></i> Longitude</span>
+                        <span id="ficLon">–</span>
+                    </div>
+                    <div class="fic-row">
+                        <span><i class="fas fa-mountain"></i> Altitude</span>
+                        <span id="ficAlt">–</span>
+                    </div>
+                    <div class="fic-row">
+                        <span><i class="fas fa-tachometer-alt"></i> Speed</span>
+                        <span id="ficSpeed">–</span>
+                    </div>
+                    <div class="fic-row">
+                        <span><i class="fas fa-plane-departure"></i> From</span>
+                        <span id="ficOrigin">–</span>
+                    </div>
+                    <div class="fic-row">
+                        <span><i class="fas fa-plane-arrival"></i> To</span>
+                        <span id="ficDest">–</span>
+                    </div>
+                    <div class="fic-row">
+                        <span><i class="fas fa-clock"></i> Est. Arrival</span>
+                        <span id="ficETA">–</span>
+                    </div>
+                </div>
+                <div class="fic-demo-note" id="ficDemoNote" style="display:none">
+                    <i class="fas fa-info-circle"></i> Demo mode — Add real API key for live data
+                </div>
+            </div>
+
+            <div id="trackingLoader" style="display:none" class="tracking-loader">
+                <i class="fas fa-spinner fa-spin"></i> Tracking flight...
+            </div>
+        </div>
+
+        <!-- Map -->
+        <div class="map-container">
+            <div id="flightMap"></div>
+            <div class="map-overlay-info">
+                <i class="fas fa-info-circle"></i> Click "Track" to see flight position on map
+            </div>
+        </div>
+    </div>
+
+    <div class="api-notice">
+        <i class="fas fa-key"></i>
+        <strong>Note:</strong> Currently running in Demo Mode. For live tracking, add your
+        <a href="https://opensky-network.org/" target="_blank">OpenSky Network API key</a>
+        to the <code>.env</code> file.
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Initialize map centered on Pakistan
+const map = L.map('flightMap').setView([25, 67], 4);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+let flightMarker = null;
+const planeIcon = L.divIcon({
+    html: '<div style="font-size:28px;transform:rotate(-45deg)">✈</div>',
+    iconSize: [30, 30], iconAnchor: [15, 15], className: ''
+});
+
+function quickTrack(fn) {
+    document.getElementById('flightNumberInput').value = fn;
+    trackFlight();
+}
+
+async function trackFlight() {
+    const fn = document.getElementById('flightNumberInput').value.trim().toUpperCase();
+    if (!fn) { alert('Please enter a flight number'); return; }
+
+    document.getElementById('trackingLoader').style.display = 'block';
+    document.getElementById('flightInfoCard').style.display = 'none';
+
+    try {
+        const res = await fetch(`/api/track/${fn}`);
+        const data = await res.json();
+        document.getElementById('trackingLoader').style.display = 'none';
+
+        if (data.success) {
+            showFlightInfo(data);
+            updateMap(data);
+        }
+    } catch (e) {
+        document.getElementById('trackingLoader').style.display = 'none';
+        alert('Error tracking flight. Please try again.');
+    }
+}
+
+function showFlightInfo(data) {
+    document.getElementById('flightInfoCard').style.display = 'block';
+    document.getElementById('ficNumber').textContent = data.flight_number;
+    document.getElementById('ficStatusText').textContent = data.status;
+    document.getElementById('ficLat').textContent = data.latitude ? data.latitude.toFixed(4) + '°' : '–';
+    document.getElementById('ficLon').textContent = data.longitude ? data.longitude.toFixed(4) + '°' : '–';
+    document.getElementById('ficAlt').textContent = data.altitude ? data.altitude.toLocaleString() + ' ft' : '–';
+    document.getElementById('ficSpeed').textContent = data.velocity ? data.velocity + ' km/h' : '–';
+    document.getElementById('ficOrigin').textContent = data.origin || '–';
+    document.getElementById('ficDest').textContent = data.destination || '–';
+    document.getElementById('ficETA').textContent = data.estimated_arrival || '–';
+
+    if (data.demo_mode) {
+        document.getElementById('ficDemoNote').style.display = 'block';
+    }
+
+    const statusDot = document.querySelector('.status-dot');
+    statusDot.style.background = data.on_ground ? '#f59e0b' : '#22c55e';
+}
+
+function updateMap(data) {
+    if (!data.latitude || !data.longitude) return;
+    const lat = parseFloat(data.latitude);
+    const lng = parseFloat(data.longitude);
+
+    if (flightMarker) map.removeLayer(flightMarker);
+    flightMarker = L.marker([lat, lng], { icon: planeIcon })
+        .addTo(map)
+        .bindPopup(`<b>${data.flight_number}</b><br>${data.status}<br>${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+        .openPopup();
+    map.setView([lat, lng], 6, { animate: true });
+}
+
+// Auto-track on load
+window.addEventListener('load', () => setTimeout(trackFlight, 500));
+</script>
+{% endblock %}

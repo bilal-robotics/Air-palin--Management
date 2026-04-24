@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Manage Flights - Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+<div class="container">
+    <div class="admin-header">
+        <h1><i class="fas fa-plane"></i> Manage Flights</h1>
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline">← Admin Home</a>
+    </div>
+    <div class="dash-table-wrapper">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Flight</th><th>Airline</th><th>Route</th>
+                    <th>Time</th><th>Price</th><th>Seats</th><th>Status</th><th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in flights %}
+                <tr>
+                    <td>{{ f.flight_number }}</td>
+                    <td><span class="{{ f.airline_code.lower() }}-bg et-code">{{ f.airline_code }}</span></td>
+                    <td>{{ f.from_city }} → {{ f.to_city }}</td>
+                    <td>{{ f.departure_time }} → {{ f.arrival_time }}</td>
+                    <td>PKR {{ "{:,.0f}".format(f.price) }}</td>
+                    <td>{{ f.available_seats }}/{{ f.total_seats }}</td>
+                    <td>
+                        <span class="status-badge {{ 'confirmed' if f.is_active else 'cancelled' }}">
+                            {{ 'Active' if f.is_active else 'Inactive' }}
+                        </span>
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.toggle_flight', flight_id=f.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline">
+                                {{ 'Deactivate' if f.is_active else 'Activate' }}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+{% endblock %}
