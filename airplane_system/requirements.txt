@@ -8,6 +8,6 @@ requests==2.31.0
 SQLAlchemy==2.0.23
 reportlab==4.2.2
 qrcode[pil]==7.4.2
-Pillow
+Pillow-SIMD
 stripe==8.10.0
 gunicorn==21.2.0
